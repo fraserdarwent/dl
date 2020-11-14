@@ -6,7 +6,9 @@ use flate2::read::GzDecoder;
 use tar::Archive;
 use regex::Regex;
 use std::env;
-
+use std::io::{Error, ErrorKind};
+use std::io;
+use std::fs;
 #[tokio::main]
 async fn main() {
     let args : Vec<String> = env::args().collect();
@@ -79,12 +81,13 @@ async fn main() {
     };
 
     // Process file if required
-    let re = Regex::new(r"^.*\.tar.gz$").unwrap();
-    if re.is_match(file_name){
+    if Regex::new(r"^.*\.tar.gz$").unwrap().is_match(file_name){
+        println!("Auto extracting your file");
+
+        // Read the tar gzip and write into a regular folder
         let tar = GzDecoder::new(file);
         let mut archive = Archive::new(tar);
-        let folder_name = file_name.replace(".tar.gz", "");
-        println!("Auto extracting your file");
+        let folder_name = file_name.trim_end_matches(".tar.gz");
         match archive.unpack(folder_name){
             Ok(_) => {},
             Err(error) => {
@@ -93,7 +96,59 @@ async fn main() {
                 process::exit(1);
             },
         };
-    }
-    
+    } else if Regex::new(r"^.*\.zip$").unwrap().is_match(file_name){
+        println!("Auto extracting your file");
+        match unzip(file_name, file_name.trim_end_matches(".zip")){
+            Ok(_) => {},
+            Err(error) => {
+                println!("{}", error);
+                println!("There was a problem extracting your file");
+                process::exit(1);
+            },
+        };
+       
+    };
     println!("Enjoy");
+}
+
+
+fn unzip(source: &str, destination:&str) -> std::io::Result<()>{
+    // Read the zip and write into a regular folder
+    let archive_file = match File::open(source){
+        Ok(file) => file,
+        Err(_) => {
+          return Err(Error::new(ErrorKind::Other, "A problem occured opening the source file"));
+        }
+    };
+    let mut archive = zip::ZipArchive::new(archive_file).unwrap();
+    for index in 0..archive.len() {
+        let mut file = archive.by_index(index).expect("A problem occured iterating over the files in the archive");
+        if file.name().ends_with("/") {
+            // File is a folder
+            match fs::create_dir_all(format!("{0}/{1}", destination, file.name())) {
+                Ok(_) => {},
+                Err(_) => {
+                    return Err(Error::new(ErrorKind::Other, "A problem occured creating a destination folder"));
+                }
+            }
+        } else {
+            // File is a file
+            let mut destination_file = match File::create(format!("{0}/{1}", destination, file.name())) {
+                Ok(file) => file,
+                Err(_) => {
+                    return Err(Error::new(ErrorKind::Other, "A problem occured creating the destination file"));
+                }
+            };
+
+            match io::copy(&mut file, &mut destination_file){
+                Ok(_) => {},
+                Err(_) => {
+                    return Err(Error::new(ErrorKind::Other, "A problem occured extracting source file"));
+                }
+            }
+        }
+    };
+
+    // This is to appease the return type of result
+    Ok(())
 }
