@@ -1,0 +1,20 @@
+[package]
+name = "dl"
+version = "0.1.0"
+authors = ["Fraser Darwent <fraser@darwen.tf>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# reqwest = { version = "0.10.8", features = ["blocking"] }
+# flate2 = "1.0.19"
+# regex = "1"
+# tar = "0.4.30"
+futures = { version = "0.3.8" }
+tokio = { version = "0.3.3", features = ["full"] }
+reqwest = { version = "0.10.8", features = ["json"] }
+tokio-compat-02 = "0.1.2"
+flate2 = "1.0.19"
+tar = "0.4.30"
+regex = "1.4.2"
