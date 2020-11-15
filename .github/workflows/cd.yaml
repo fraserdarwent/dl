@@ -1,8 +1,8 @@
-name: Continuous Integration
+name: Continuous Deployment
 on:
-  pull_request:
+  push:
     branches:
-      - '*'
+      - 'master'
 jobs:
   build:
     name: macOS 10.15
@@ -20,24 +20,26 @@ jobs:
           args: --release
       - name: Create Archive
         run: |
-          zip --junk-paths dl-${{ github.ref }}-preview.zip target/release/dl
-      - name: Create Release
-        id: create_release
+          zip --junk-paths dl-${{ github.ref }}.zip target/release/dl
+      - name: Bump Tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v5
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create GitHub Release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
-      - name: Upload Release Asset
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          release_name: Release ${{ steps.tag_version.outputs.new_tag }}
+      - name: Upload Archive
         id: upload-release-asset 
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dl-${{ github.ref }}-preview.zip
-          asset_name: dl-${{ github.ref }}-preview.zip
+          asset_path: dl-${{ steps.tag_version.outputs.new_tag }}.zip
+          asset_name: dl-${{ steps.tag_version.outputs.new_tag }}.zip
           asset_content_type: application/zip
