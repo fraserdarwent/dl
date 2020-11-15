@@ -126,7 +126,7 @@ fn unzip(source: &str, destination:&str) -> std::io::Result<()>{
     match fs::create_dir_all(destination) {
         Ok(_) => {},
         Err(_) => {
-            return Err(Error::new(ErrorKind::Other, "A problem occured creating a destination folder"));
+            return Err(Error::new(ErrorKind::Other, "A problem occured creating the destination folder"));
         }
     }
 
@@ -138,23 +138,22 @@ fn unzip(source: &str, destination:&str) -> std::io::Result<()>{
             match fs::create_dir_all(format!("{0}/{1}", destination, file.name())) {
                 Ok(_) => {},
                 Err(_) => {
-                    return Err(Error::new(ErrorKind::Other, "A problem occured creating a destination folder"));
+                    return Err(Error::new(ErrorKind::Other, "A problem occured creating a folder in the destination folder"));
                 }
             }
         } else {
             // File is a file
             let mut destination_file = match File::create(format!("{0}/{1}", destination, file.name())) {
                 Ok(file) => file,
-                Err(error) => {
-                    println!("{}", error);
-                    return Err(Error::new(ErrorKind::Other, "A problem occured creating the destination file"));
+                Err(_) => {
+                    return Err(Error::new(ErrorKind::Other, "A problem occured creating a file in the destination folder"));
                 }
             };
 
             match io::copy(&mut file, &mut destination_file){
                 Ok(_) => {},
                 Err(_) => {
-                    return Err(Error::new(ErrorKind::Other, "A problem occured extracting source file"));
+                    return Err(Error::new(ErrorKind::Other, "A problem occured extracting a file"));
                 }
             }
         }
