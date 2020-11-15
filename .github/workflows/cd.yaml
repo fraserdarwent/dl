@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - 'master'
+    paths-ignore:
+      - 'Formula/*'
 jobs:
   build:
     name: macOS 10.15
