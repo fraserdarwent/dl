@@ -24,6 +24,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           dry_run: true
+          tag_prefix: ''
       - name: Install Cargo Bump
         uses: actions-rs/cargo@v1
         with:
@@ -47,6 +48,7 @@ jobs:
         with:
           tag_name: ${{ steps.push_tag.outputs.new_tag }}
           release_name: Release ${{ steps.push_tag.outputs.new_tag }}
+          tag_prefix: ''
       - name: Create Archive
         run: |
           zip --junk-paths dl-darwin-amd64.zip target/release/dl
