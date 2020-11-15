@@ -1,0 +1,43 @@
+name: Continuous Integration
+on:
+  pull_request:
+    branches:
+      - '*'
+jobs:
+  macos-10-15:
+    name: macOS 10.15
+    runs-on: macos-10.15
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: 1.47.0
+      - name: Compile
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - name: Create Archive
+        run: |
+          zip --junk-paths dl-${{ github.base_ref }}-preview.zip target/release/dl
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: preview
+          release_name: Preview
+          draft: true
+          prerelease: true
+      - name: Upload Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dl-${{ github.base_ref }}-preview.zip
+          asset_name: dl-${{ github.base_ref }}-preview.zip
+          asset_content_type: application/zip
