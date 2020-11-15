@@ -54,6 +54,7 @@ jobs:
         run: |
           zip --junk-paths dl-darwin-amd64.zip target/release/dl
       - name: Upload Archive
+        id: upload-archive
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -62,3 +63,13 @@ jobs:
           asset_path: dl-darwin-amd64.zip
           asset_name: dl-${{ steps.push-tag.outputs.new_tag }}-darwin-amd64.zip
           asset_content_type: application/zip
+      - name: Update Formula
+        run: |
+          SHA=$(sha256sum target/release/dl)
+          URL=${{ steps.upload-archive.browser_download_url }}
+          sed -i "s/\${SHA}/${SHA}/g" Formula/dl.rb
+          sed -i "s/\${URL}/${URL}/g" Formula/dl.rb
+          cat Formula/dl.rb
+      - name: Test Formula
+        run:  |
+          brew audit --strict --new-formula --online Formula/dl.rb
