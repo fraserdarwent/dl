@@ -13,7 +13,6 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: 1.47.0
-          components: cargo-bump
       - name: Compile
         uses: actions-rs/cargo@v1
         with:
@@ -25,6 +24,11 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           dry_run: true
+      - name: Install Cargo Bump
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: cargo-bump
       - name: Set Cargo Version
         uses: actions-rs/cargo@v1
         with:
