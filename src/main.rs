@@ -121,6 +121,16 @@ fn unzip(source: &str, destination:&str) -> std::io::Result<()>{
         }
     };
     let mut archive = zip::ZipArchive::new(archive_file).unwrap();
+
+    // Create the root folder
+    match fs::create_dir_all(destination) {
+        Ok(_) => {},
+        Err(_) => {
+            return Err(Error::new(ErrorKind::Other, "A problem occured creating a destination folder"));
+        }
+    }
+
+    // Extract the archive into the root folder
     for index in 0..archive.len() {
         let mut file = archive.by_index(index).expect("A problem occured iterating over the files in the archive");
         if file.name().ends_with("/") {
@@ -135,7 +145,8 @@ fn unzip(source: &str, destination:&str) -> std::io::Result<()>{
             // File is a file
             let mut destination_file = match File::create(format!("{0}/{1}", destination, file.name())) {
                 Ok(file) => file,
-                Err(_) => {
+                Err(error) => {
+                    println!("{}", error);
                     return Err(Error::new(ErrorKind::Other, "A problem occured creating the destination file"));
                 }
             };
