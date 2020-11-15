@@ -20,7 +20,7 @@ jobs:
           args: --release
       - name: Create Archive
         run: |
-          zip --junk-paths dl-${{ github.base_ref }}.zip target/release/dl
+          zip --junk-paths dl-darwin-amd64.zip target/release/dl
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -38,6 +38,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dl-${{ github.base_ref }}.zip
-          asset_name: dl-${{ github.base_ref }}-darwin-amd64-preview.zip
+          asset_path: dl-darwin-amd64.zip
+          asset_name: dl-preview-darwin-amd64-preview.zip
           asset_content_type: application/zip
