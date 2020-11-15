@@ -1,4 +1,4 @@
-name: Build
+name: Continuous Integration
 on:
   pull_request:
     branches:
@@ -7,13 +7,13 @@ on:
     branches:
       - master
 jobs:
-  build:
+  compile:
     name: MacOS 11.0
     runs-on: macos-11.0
     steps:
       - uses: actions/checkout@v1
       - name: Install Rustup
-        run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+        run: curl https://sh.rustup.rs | sh
       - name: Install Rust
         run: rustup toolchain install 1.47.0
       - name: Compile
